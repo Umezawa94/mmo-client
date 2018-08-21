@@ -10,6 +10,8 @@ class Game {
     private _light!: BABYLON.SpotLight;
     private _shadowGenerator!: BABYLON.ShadowGenerator;
 
+    private _grassMaterial! : BABYLON.FurMaterial;
+
     private _skyMaterial! : BABYLON.SkyMaterial;
     private _starboxMaterial! : BABYLON.StandardMaterial;
     private _sunLight! : BABYLON.HemisphericLight;
@@ -18,6 +20,9 @@ class Game {
     private _sunSpeed : number = 1/600;
     
     private _pipeline! : BABYLON.DefaultRenderingPipeline;
+
+    private _lensFlareSource! : BABYLON.AbstractMesh;
+    private _lensFlareSystem! : BABYLON.LensFlareSystem;
 
 
     constructor(canvasElement : string) {
@@ -110,6 +115,7 @@ class Game {
             mesh.scaling.x = mesh.scaling.y = mesh.scaling.z = 5;
             // this.cellify(meshes[0]);
             mesh.setEnabled(false);
+            mesh.isBlocker = true;
             // mesh.simplify([
             //     { quality: 0.7, distance: 2000, optimizeMesh:true },
             //     { quality: 0.5, distance: 5000, optimizeMesh:true },
@@ -134,6 +140,7 @@ class Game {
             mesh.scaling.x = mesh.scaling.y = mesh.scaling.z = 100;
             // this.cellify(meshes[0]);
             mesh.setEnabled(false);
+            mesh.isBlocker = true;
             // mesh.simplify([
             //     { quality: 0.7, distance: 2000, optimizeMesh:true },
             //     { quality: 0.5, distance: 5000, optimizeMesh:true },
@@ -153,6 +160,7 @@ class Game {
         let ground = BABYLON.MeshBuilder.CreateGround('ground',
         {width: 6000, height: 6000, subdivisions: 500}, this._scene);
         ground.receiveShadows = true; 
+        ground.isBlocker = true; 
         ground.checkCollisions = true;
         var groundMaterial = new BABYLON.StandardMaterial("groundMat", this._scene);
         groundMaterial.diffuseTexture = new BABYLON.GrassProceduralTexture("grassTex", 1024, this._scene);
@@ -161,8 +169,9 @@ class Game {
 
         let grass = BABYLON.MeshBuilder.CreateGround('grass',
                                 {width: 6000, height: 6000, subdivisions: 500}, this._scene);
-                                grass.receiveShadows = true; 
-        var grassMaterial = new BABYLON.FurMaterial("grass", this._scene);
+        grass.receiveShadows = true;
+        grass.isBlocker = true; 
+        var grassMaterial = this._grassMaterial = new BABYLON.FurMaterial("grass", this._scene);
         grassMaterial.highLevelFur = true;
         grassMaterial.furLength = 100;
         grassMaterial.furAngle = 0;
@@ -175,7 +184,7 @@ class Game {
         grassMaterial.furOffset = 20;
         grassMaterial.furDensity = 50;
         grassMaterial.furSpeed = 1000;
-        grassMaterial.furGravity = new BABYLON.Vector3(0, -0, 0);
+        grassMaterial.furGravity = new BABYLON.Vector3(0, 0, 0);
         // var grassTexture = new BABYLON.Texture("./assets/human_female_diffuse.png", this._scene);
         // var grassTexture = new BABYLON.GrassProceduralTexture("grassTex", 4096, this._scene);
         
@@ -211,6 +220,7 @@ class Game {
 
         this._skyMaterial = new BABYLON.SkyMaterial("skyMaterial", this._scene);
         var skyMaterial = this._skyMaterial;
+        skyMaterial.inclination = 1.45;
         skyMaterial.backFaceCulling = false;
         skyMaterial.luminance = 0.9;
         skyMaterial.turbidity = 0.4;
@@ -218,7 +228,7 @@ class Game {
         skyMaterial.mieDirectionalG = 0.8;
         
         skyMaterial.mieCoefficient = 0.02; // The mieCoefficient in interval [0, 0.1], affects the property skyMaterial.mieDirectionalG
-        skyMaterial.rayleigh = 0.5;
+        skyMaterial.rayleigh = 1.0;
         skyMaterial.alphaMode = 1;
         skyMaterial.alpha = 0.0;
         // skyMaterial.
@@ -258,6 +268,16 @@ class Game {
         pipeline.depthOfField.focusDistance = 2000;
         pipeline.depthOfField.fStop = 1.4;
         pipeline.depthOfField.focalLength = 30;
+
+        this._lensFlareSource = new BABYLON.Mesh("lensFlareSource", this._scene);
+        let lensFlareSystem = this._lensFlareSystem = new BABYLON.LensFlareSystem("lensFlareSystem", this._lensFlareSource, this._scene);
+        var flare00 = new BABYLON.LensFlare(0.2, 0, new BABYLON.Color3(1, 1, 1), "Assets/lens5.png", lensFlareSystem);
+        var flare01 = new BABYLON.LensFlare(0.5, 0.2, new BABYLON.Color3(0.5, 0.5, 1), "assets/lens4.png", lensFlareSystem);
+        var flare02 = new BABYLON.LensFlare(0.2, 1.0, new BABYLON.Color3(1, 1, 1), "assets/lens4.png", lensFlareSystem);
+        var flare03 = new BABYLON.LensFlare(0.4, 0.4, new BABYLON.Color3(1, 0.5, 1), "assets/Flare.png", lensFlareSystem);
+        var flare04 = new BABYLON.LensFlare(0.1, 0.6, new BABYLON.Color3(1, 1, 1), "assets/lens5.png", lensFlareSystem);
+        var flare05 = new BABYLON.LensFlare(0.3, 0.8, new BABYLON.Color3(1, 1, 1), "assets/lens4.png", lensFlareSystem);
+
         
 
     }
@@ -301,8 +321,11 @@ class Game {
             // this._sunLight.intensity = intensity(this._skyMaterial.inclination);
             this._sunLight.specular.set(int128, int128, int128)
             this._sunLight.diffuse.set(int128, int64, int32)
-            this._sunLight.groundColor.set(0.2 * int128, 0.2 * int64, 0.2 * int32)
-            
+            this._sunLight.groundColor.set(0.2 * int128, 0.2 * int64, 0.2 * int32);
+
+            this._lensFlareSource.position = this._skyMaterial.sunPosition.scale(1000).add(this._camera.position);
+
+            // this._grassMaterial.furGravity.set(0.2 + 0.2 * Math.sin(this._skyMaterial.inclination * 100), 0, 0);
 
             // this._sunLightAmbient.direction = this._skyMaterial.sunPosition.negate();
             // this._sunLightAmbient.direction.y *= -1;
