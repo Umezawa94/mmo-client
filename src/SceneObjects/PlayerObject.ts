@@ -61,9 +61,6 @@ export class PlayerObject extends CharacterObject{
             }
         }
 
-
-
-
         this._dir.set(0,0,0);
 
         let front = this._camera.getForwardRay().direction;

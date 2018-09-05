@@ -9,6 +9,8 @@ import { AssetManager } from "./AssetManager.js";
 import { InputManager } from "./InputManager.js";
 import { PlayerObject } from "./SceneObjects/PlayerObject.js";
 import { TerrainSystem } from "./Systems/TerrainSystem.js";
+import { DebugVisualizer } from "./DebugVisualizer.js";
+import { Debug } from "babylonjs";
 
 export default class Game {
     private _canvas: HTMLCanvasElement;
@@ -32,6 +34,8 @@ export default class Game {
     private _objectSystem! : ObjectSystem;
 
     private _player! : PlayerObject;
+
+    public debugVisualizer! : DebugVisualizer;
 
     constructor(canvasElement : string) {
         // Create canvas and engine.
@@ -216,6 +220,8 @@ export default class Game {
         player.position.set(0,100,0);
 
 
+
+        this.debugVisualizer = new DebugVisualizer(scene);
     }
 
 

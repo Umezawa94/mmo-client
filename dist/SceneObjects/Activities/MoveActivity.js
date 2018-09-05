@@ -11,6 +11,8 @@ export class MoveActivity extends Activity {
         this._startTime = startTime;
         this._startPosition.copyFrom(startPosition);
         this._direction.copyFrom(direction);
+        let faceMap = this._target.attachment.attachedTo.faceMap;
+        this._path = faceMap.getProjectedPath(startPosition, direction, this._target.attachment.faceId);
     }
     ;
     onStart() {
@@ -18,8 +20,12 @@ export class MoveActivity extends Activity {
         this._target.rotation.copyFrom(MoveActivity._rotation);
     }
     update(time) {
-        this._target.position.copyFrom(this._startPosition);
-        this._direction.scaleAndAddToRef(time, this._target.position);
+        let faceId = this._path.getPointOnPath(time, this._target.position, false);
+        if (faceId == null) {
+            this._target.position.copyFrom(this._path.lastSegment.exit.s);
+        }
+        // this._target.position.copyFrom(this._startPosition);
+        // this._direction.scaleAndAddToRef(time, this._target.position);
     }
     get type() {
         return "move";

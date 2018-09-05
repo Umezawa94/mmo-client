@@ -1,5 +1,5 @@
-import { VectorTools } from "../VectorTools";
-import { Vector3 } from "babylonjs";
+import { VectorTools } from "../VectorTools.js";
+import Game from "../index.js";
 
 export interface TerrainObject extends BABYLON.Mesh {
     faceMap : FaceMap;
@@ -49,12 +49,12 @@ export class FaceMap{
         return this._terrainObject;
     }
 
-    getProjectedPath(origin: BABYLON.Vector3, dir : BABYLON.Vector3, startFace : Face){
-
+    getProjectedPath(origin: BABYLON.Vector3, dir : BABYLON.Vector3, startFaceId : number){
+        return new Path(this, origin, dir, this._faces[startFaceId]);
     }
 }
 
-class Path{
+export class Path{
     protected _faceMap: FaceMap;
     protected _origin: BABYLON.Vector3;
     protected _dir : BABYLON.Vector3;
@@ -63,11 +63,15 @@ class Path{
 
     protected _pathSegments : PathSegment[] = [];
 
+
+    protected visualiser : PathSegment[] = [];//TODO: Remove
+
     constructor(faceMap: FaceMap, origin: BABYLON.Vector3, dir : BABYLON.Vector3, startFace : Face){
         this._faceMap = faceMap;
         this._origin = origin;
         this._dir = dir;
         this._startFace = startFace;
+
 
         this._pathSegments[0] = this._startFace.getProjectedSegment(origin, dir)!;
         this._pathSegments[0].startLength = 0;
@@ -75,10 +79,22 @@ class Path{
         this._pathSegments[0].endLength = BABYLON.Vector3.Distance(origin, this._pathSegments[0].exit.s);
         this._pathSegments[0].endProjectedLength = this._pathSegments[0].exit.t;
 
+        this.getPointOnPath(10000, BABYLON.Tmp.Vector3[0]);
+        let points = [];
+        for (let i = 0; i < this._pathSegments.length; i++) {
+            const seg = this._pathSegments[i];
+            points.push(seg.entry.s);
+            points.push(seg.exit.s);
+        }
+        (<Game>(<any>window).game).debugVisualizer.visualizeLine(points)
+    }
+    
+    get lastSegment(){
+        return this._pathSegments[this._pathSegments.length - 1];
     }
 
     getPointOnPath(t : number, out:BABYLON.Vector3, useProjectedLength? : boolean){
-        let lastSegment = this._pathSegments[this._pathSegments.length - 1];
+        let lastSegment = this.lastSegment;
         let lastEndLength = useProjectedLength ? lastSegment.endProjectedLength : lastSegment.endLength;
         while (lastEndLength <= t && !this.reachedEnd){
             this.calculateNextSegment();
@@ -88,12 +104,13 @@ class Path{
         if(lastEndLength < t) return null;
         for (let i = this._pathSegments.length - 1; i >= 0 ; i--) {
             const segment = this._pathSegments[i];
-            let endLength = useProjectedLength ? segment.endProjectedLength : segment.endLength;
-            if (segment.endLength > t){
-                let startLength = useProjectedLength ? segment.endProjectedLength : segment.endLength;
+            let startLength = useProjectedLength ? segment.startProjectedLength : segment.startLength;
+            if (startLength < t){
+                let endLength = useProjectedLength ? segment.endProjectedLength : segment.endLength;
                 let segmentT = (t-startLength)/(endLength-startLength);
+
                 VectorTools.interpolate(segmentT, segment.origin, segment.exit.s, out);
-                return out;
+                return segment.faceId;
             }
         }
     }
@@ -109,6 +126,7 @@ class Path{
         newSegment.startProjectedLength = lastSegment.startProjectedLength;
         newSegment.endLength = newSegment.startLength + newSegment.actualLength;
         newSegment.endProjectedLength = newSegment.startProjectedLength + newSegment.projectedLength;
+
         this._pathSegments.push(newSegment);
         return newSegment;
     }
@@ -145,6 +163,8 @@ export class Face{
 
     public surrounding : Face[] = [];
 
+    protected static offsetMatrix = BABYLON.Matrix.FromValues(1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0); 
+
     constructor(faceMap : FaceMap, faceId : number, index0 : number, index1 : number, index2 : number){
         this._faceMap = faceMap;
         this._terrainObject = faceMap.terrainObject;
@@ -162,7 +182,11 @@ export class Face{
         this._inclination = Math.acos(this._normal.y);
 
         this._toCartMatrix = VectorTools.MatrixFromThreeVectors(this._pos0, this._pos1, this._pos2);
-        this._toCartMatrix.invertToRef(this._toBaryMatrix); //TODO: Catch case: one vec is null vector
+        while(this._toCartMatrix.determinant() == 0){
+            this._toCartMatrix.addToSelf(Face.offsetMatrix);
+            debugger;
+        }
+        this._toCartMatrix.invertToRef(this._toBaryMatrix);
 
 
         this._terrainObject.getVerticesData(BABYLON.VertexBuffer.PositionKind)
@@ -184,18 +208,26 @@ export class Face{
     getProjectedSegment(origin: BABYLON.Vector3, dir : BABYLON.Vector3) : PathSegment | null {
         let x = BABYLON.Tmp.Vector3[0];
         let d = BABYLON.Tmp.Vector3[1];
-        this.toBarycentric(origin, x);
-        this.toBarycentric(dir, d);
-        x.scale(1/ (x.x + x.y + x.z));
-        d.scale(1/ (d.x + d.y + d.z));
 
-        this._s0.copyFrom(this._s1.copyFrom(this._s2.copyFrom(x)));
+        origin.addToRef(dir, d);
+
+        this.toBarycentric(origin, x);
+        this.toBarycentric(d, d);
+        x.scaleInPlace(1/ (x.x + x.y + x.z));
+        d.scaleInPlace(1/ (d.x + d.y + d.z));
+        d.subtractInPlace(x);
+
+        // this._s0.copyFrom(this._s1.copyFrom(this._s2.copyFrom(x)));
+
+        // console.log(x);
 
         let possibleHits : FaceIntersection[]  = [];
         let t0 = - x.x / d.x;
         if(Number.isFinite(t0)){
-            d.scaleAndAddToRef(t0, this._s0);
-            if(this._s0.x >= 0 && this._s0.y >= 0 && this._s0.z >= 0)
+            this._s0.set(0, x.y + t0 * d.y, x.z + t0 * d.z);
+            VectorTools.baryNormalize(this._s0, this._s0);
+            VectorTools.baryNormalize(this._s0, this._s0);
+            if(this._s0.y >= -0.01 && this._s0.z >= -0.01)
             possibleHits.push({
                 side: 0,
                 t: t0,
@@ -205,8 +237,10 @@ export class Face{
         }
         let t1 = - x.y / d.y;
         if(Number.isFinite(t1)){
-            d.scaleAndAddToRef(t1, this._s1);
-            if(this._s1.x >= 0 && this._s1.y >= 0 && this._s1.z >= 0)
+            this._s1.set(x.x + t1 * d.x, 0, x.z + t1 * d.z);
+            VectorTools.baryNormalize(this._s1, this._s1);
+            VectorTools.baryNormalize(this._s1, this._s1);
+            if(this._s1.x >= -0.01 && this._s1.z >= -0.01)
             possibleHits.push({
                 side: 1,
                 t: t1,
@@ -216,8 +250,10 @@ export class Face{
         }
         let t2 = - x.z / d.z;
         if(Number.isFinite(t2)){
-            d.scaleAndAddToRef(t2, this._s2);
-            if(this._s2.x >= 0 && this._s2.y >= 0 && this._s2.z >= 0)
+            this._s2.set(x.x + t2 * d.x, x.y + t2 * d.y, 0);
+            VectorTools.baryNormalize(this._s2, this._s2);
+            VectorTools.baryNormalize(this._s2, this._s2);
+            if(this._s2.x >= -0.01 && this._s2.y >= -0.01)
             possibleHits.push({
                 side: 2,
                 t: t2,
@@ -228,11 +264,22 @@ export class Face{
 
         possibleHits.sort((a,b) => {return a.t - b.t});
 
+        if(possibleHits.length == 3){   //for corner hits
+            for (let i = 0; i < possibleHits.length-1; i++) {
+                if(possibleHits[i+1].t - possibleHits[i].t <= 0.01){
+                    possibleHits.splice(i, 1);
+                    break;
+                } ;
+            }
+        }
         if(possibleHits.length == 2){
+            console.log(possibleHits[0].s.x + possibleHits[0].s.y + possibleHits[0].s.z, possibleHits[1].s.x + possibleHits[1].s.y + possibleHits[1].s.z);
+            
             this.toCarthesian(possibleHits[0].s, possibleHits[0].s);
             this.toCarthesian(possibleHits[1].s, possibleHits[1].s);
-            return new PathSegment(possibleHits[0], possibleHits[1], origin);
+            return new PathSegment(possibleHits[0], possibleHits[1], origin, this._faceId);
         }
+        debugger;
         return null;
         //TODO
 
@@ -278,15 +325,18 @@ class PathSegment{
     public entry : FaceIntersection;
     public exit: FaceIntersection;
 
+    public faceId: number;
+
     public startLength! : number;
     public endLength! : number;
     public startProjectedLength! : number;
     public endProjectedLength! : number;
 
-    constructor(entry : FaceIntersection, exit : FaceIntersection, origin : BABYLON.Vector3){
+    constructor(entry : FaceIntersection, exit : FaceIntersection, origin : BABYLON.Vector3, faceId: number){
         this.entry = entry;
         this.exit = exit;
         this.origin = origin;
+        this.faceId = faceId;
     } 
     get projectedLength(){
         return this.exit.t;

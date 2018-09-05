@@ -7,6 +7,7 @@ import { AssetManager } from "./AssetManager.js";
 import { InputManager } from "./InputManager.js";
 import { PlayerObject } from "./SceneObjects/PlayerObject.js";
 import { TerrainSystem } from "./Systems/TerrainSystem.js";
+import { DebugVisualizer } from "./DebugVisualizer.js";
 export default class Game {
     constructor(canvasElement) {
         // Create canvas and engine.
@@ -144,6 +145,7 @@ export default class Game {
         this._objectSystem = new ObjectSystem(this._scene, this._assetManager, this._terrainSystem);
         let player = this._player = new PlayerObject(this._objectSystem, this._inputManager, this._camera);
         player.position.set(0, 100, 0);
+        this.debugVisualizer = new DebugVisualizer(scene);
     }
     cellify(mesh) {
         let materials = mesh.material.subMaterials;
