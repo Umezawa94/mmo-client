@@ -98,7 +98,7 @@ export class GrassPopulation{
         var effect = this._scene.getEngine().createEffectForParticles("myParticle", ["time"]);
 
         // Particles
-        var particleSystem = new BABYLON.ParticleSystem("particles", 400, this._scene, effect);
+        var particleSystem = new BABYLON.GPUParticleSystem("particles", { capacity:10000, randomTextureSize: 4096 }, this._scene);
         particleSystem.particleTexture = new BABYLON.Texture("assets/Flare.png", this._scene);
         particleSystem.minSize = 2;
         particleSystem.maxSize = 10;
@@ -107,15 +107,18 @@ export class GrassPopulation{
         particleSystem.minEmitPower = 50;
         particleSystem.maxEmitPower = 100.0;
         particleSystem.emitter = this._terrainObject;
-        particleSystem.emitRate = 10;
-        particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+        particleSystem.minEmitBox = this._terrainObject.getBoundingInfo().boundingBox.minimum; // Bottom Left Front
+        particleSystem.maxEmitBox = this._terrainObject.getBoundingInfo().boundingBox.maximum; // Top Right Back
+        particleSystem.maxEmitBox.y += 1000
+        particleSystem.emitRate = 30;
+        // particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
         particleSystem.direction1 = new BABYLON.Vector3(0.5, -0.1, -0.2);
         particleSystem.direction2 = new BABYLON.Vector3(1, 0.1, 0);
         particleSystem.color1 = new BABYLON.Color4(0.2, 0.3, 0, 1);
         particleSystem.color2 = new BABYLON.Color4(0.1, 0.1, 0, 1);
         particleSystem.colorDead = new BABYLON.Color4(0.3, 0.2, 0, 0);
         // particleSystem.gravity = new BABYLON.Vector3(0, -1.0, 0);
-        particleSystem.startPositionFunction = this.particlePlacement.bind(this);
+        // particleSystem.startPositionFunction = this.particlePlacement.bind(this);
         particleSystem.start();
 
         var time = 0;
