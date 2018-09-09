@@ -4,7 +4,7 @@ import { LensFlareSystem } from "../LensFlare.js";
 export class SkySystem extends System{
     private _pipeline : BABYLON.DefaultRenderingPipeline;
     
-    private _time : number = 1.51;
+    private _time : number = 1.6;
     private _updateTime : number = 0;
 
     private _skyMaterial! : BABYLON.SkyMaterial;

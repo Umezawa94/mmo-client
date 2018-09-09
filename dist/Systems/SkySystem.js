@@ -3,7 +3,7 @@ import { LensFlareSystem } from "../LensFlare.js";
 export class SkySystem extends System {
     constructor(scene, pipeline) {
         super(scene);
-        this._time = 1.51;
+        this._time = 1.6;
         this._updateTime = 0;
         this._sunSpeed = 1 / 36000;
         this._pipeline = pipeline;
