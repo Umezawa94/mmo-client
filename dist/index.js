@@ -145,7 +145,7 @@ export default class Game {
         this._objectSystem = new ObjectSystem(this._scene, this._assetManager, this._terrainSystem);
         let player = this._player = new PlayerObject(this._objectSystem, this._inputManager, this._camera);
         player.position.set(0, 100, 0);
-        this.debugVisualizer = new DebugVisualizer(scene);
+        DebugVisualizer.setScene(scene);
     }
     cellify(mesh) {
         let materials = mesh.material.subMaterials;

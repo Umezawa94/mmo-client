@@ -5,6 +5,7 @@ export class Attachment {
     protected _target : DynamicObject;
     protected _attachedTo? : TerrainObject;
     protected _faceId? : number;
+    protected _attachmentPoint : BABYLON.Vector3 = BABYLON.Vector3.Zero();
 
     constructor(target : DynamicObject){
         this._target = target;
@@ -31,6 +32,13 @@ export class Attachment {
     }
     set attachedTo(attachedTo: TerrainObject|undefined){
         this._attachedTo = attachedTo;
+    }
+    
+    get attachmentPoint() : BABYLON.Vector3{
+        return this._attachmentPoint;
+    }
+    set attachmentPoint(attachmentPoint: BABYLON.Vector3){
+        this._attachmentPoint.copyFrom(attachmentPoint);
     }
 
     clear(){

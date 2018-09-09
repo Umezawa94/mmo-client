@@ -5,6 +5,7 @@ import { ObjectSystem } from "../Systems/ObjectSystem.js";
 import { VectorTools } from "../VectorTools.js";
 import { MoveActivity } from "./Activities/MoveActivity.js";
 import { FallActivity } from "./Activities/FallActivity.js";
+import { Vector3 } from "babylonjs";
 
 export class PlayerObject extends CharacterObject{
     private _inputManager : InputManager;
@@ -22,10 +23,12 @@ export class PlayerObject extends CharacterObject{
         this._inputManager = inputManager;
         this._camera = camera;
         this.getScene().actionManager!.registerAction(new BABYLON.ExecuteCodeAction( BABYLON.ActionManager.OnEveryFrameTrigger, this.update.bind(this)));
+        inputManager.registerKeyDownAction("Space", this.jump.bind(this));
     }
 
     public buildScene(scene : BABYLON.Scene, assetManager : AssetManager){
         this.ellipsoid = new BABYLON.Vector3(100,200,100);
+        this.attachment.attachmentPoint.set(0,-100,0);
 
         assetManager.cloneMesh("ManuelBastion.babylon", "f_an03").then((mesh)=>{
             mesh.parent = this;
@@ -36,6 +39,7 @@ export class PlayerObject extends CharacterObject{
         let cameraMesh = new BABYLON.Mesh(this.name + "camera", this.getScene(), this);
         cameraMesh.position.y = 50;
         this._camera.setTarget(cameraMesh);
+
 
         
         // let ellipsoidMesh = BABYLON.MeshBuilder.CreateSphere(this.name+"ellipsoid",{
@@ -85,7 +89,7 @@ export class PlayerObject extends CharacterObject{
             this._dir.addInPlace(right);
         }
         this._dir.normalize();
-        this._dir.scale(200 * delta / 1000);
+        this._dir.scale(20 * delta / 1000);
 
         // this.position.addInPlace(this._dir);
 
@@ -102,5 +106,19 @@ export class PlayerObject extends CharacterObject{
 
 
 
+    }
+
+    public jump(){
+
+        if(!this.attachment.isAttached) return;
+        let dir = new BABYLON.Vector3(0,1,0);
+        let move = this.getActivity("move") as MoveActivity;
+        if(move){
+            dir.addInPlace(move.direction);
+            this.removeActivity("move");
+        }
+        this.attachment.clear();
+        this._dirOld.set(0,0,0);
+        this.addActivity(new FallActivity(this, this._objectSystem.getTime(), this._objectSystem.terrainSystem, this.position, dir))
     }
 }

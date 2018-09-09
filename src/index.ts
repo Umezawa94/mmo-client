@@ -35,8 +35,6 @@ export default class Game {
 
     private _player! : PlayerObject;
 
-    public debugVisualizer! : DebugVisualizer;
-
     constructor(canvasElement : string) {
         // Create canvas and engine.
         this._canvas = document.getElementById(canvasElement) as HTMLCanvasElement;
@@ -221,7 +219,7 @@ export default class Game {
 
 
 
-        this.debugVisualizer = new DebugVisualizer(scene);
+        DebugVisualizer.setScene(scene);
     }
 
 

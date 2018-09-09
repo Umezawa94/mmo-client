@@ -1,5 +1,6 @@
 export class Attachment {
     constructor(target) {
+        this._attachmentPoint = BABYLON.Vector3.Zero();
         this._target = target;
     }
     setFromPick(pick) {
@@ -20,6 +21,12 @@ export class Attachment {
     }
     set attachedTo(attachedTo) {
         this._attachedTo = attachedTo;
+    }
+    get attachmentPoint() {
+        return this._attachmentPoint;
+    }
+    set attachmentPoint(attachmentPoint) {
+        this._attachmentPoint.copyFrom(attachmentPoint);
     }
     clear() {
         this._attachedTo = undefined;

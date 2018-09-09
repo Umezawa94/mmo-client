@@ -1,5 +1,6 @@
 import { Activity } from "./Activity.js";
 import { VectorTools } from "../../VectorTools.js";
+import { DebugVisualizer } from "../../DebugVisualizer.js";
 export class MoveActivity extends Activity {
     constructor(target, startTime, startPosition, direction) {
         super(target, startTime);
@@ -11,8 +12,8 @@ export class MoveActivity extends Activity {
         this._startTime = startTime;
         this._startPosition.copyFrom(startPosition);
         this._direction.copyFrom(direction);
-        let faceMap = this._target.attachment.attachedTo.faceMap;
-        this._path = faceMap.getProjectedPath(startPosition, direction, this._target.attachment.faceId);
+        this._faceMap = this._target.attachment.attachedTo.faceMap;
+        this._path = this._faceMap.getProjectedPath(startPosition.add(this._target.attachment.attachmentPoint), direction, this._target.attachment.faceId);
     }
     ;
     onStart() {
@@ -24,6 +25,11 @@ export class MoveActivity extends Activity {
         if (faceId == null) {
             this._target.position.copyFrom(this._path.lastSegment.exit.s);
         }
+        else {
+            this._target.attachment.faceId = faceId;
+            DebugVisualizer.highlightFace(this._faceMap.faces[faceId], BABYLON.Color3.Red());
+        }
+        this._target.position.subtractInPlace(this._target.attachment.attachmentPoint);
         // this._target.position.copyFrom(this._startPosition);
         // this._direction.scaleAndAddToRef(time, this._target.position);
     }
@@ -31,6 +37,9 @@ export class MoveActivity extends Activity {
         return "move";
     }
     ;
+    get direction() {
+        return this._direction;
+    }
 }
 MoveActivity._rotation = BABYLON.Vector3.Zero();
 //# sourceMappingURL=MoveActivity.js.map

@@ -14,7 +14,7 @@ export class TerrainSystem extends System {
         var groundMaterial = new BABYLON.StandardMaterial("groundMat", this._scene);
         groundMaterial.diffuseTexture = new BABYLON.GrassProceduralTexture("grassTex", 1024, this._scene);
         groundMaterial.specularColor.set(0, 0, 0);
-        groundMaterial.wireframe = true;
+        groundMaterial.wireframe = false;
         ground.material = groundMaterial;
         var positions = ground.getVerticesData(BABYLON.VertexBuffer.PositionKind);
         for (let i = 0; i < positions.length; i += 3) {
@@ -25,30 +25,30 @@ export class TerrainSystem extends System {
         console.log(positions);
         ground.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
         this.addTerrain(ground);
-        // let grass = BABYLON.MeshBuilder.CreateGround('grass',
-        //                         {width: 6000, height: 6000, subdivisions: 500}, this._scene);
-        // grass.receiveShadows = true;
-        // grass.isBlocker = false;
-        // grass.isPickable = false;
-        // var grassMaterial = new BABYLON.FurMaterial("grass", this._scene);
-        // grassMaterial.highLevelFur = true;
-        // grassMaterial.furLength = 100;
-        // grassMaterial.furAngle = 0;
-        // grassMaterial.furColor = new BABYLON.Color3(1, 1, 1);
-        // // grassMaterial.diffuseTexture = new BABYLON.Texture("assets/fur.jpg", this._scene);
-        // grassMaterial.diffuseTexture = groundMaterial.diffuseTexture;
-        // grassMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        // grassMaterial.furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", this._scene);
-        // grassMaterial.furSpacing = 50;
-        // grassMaterial.furOffset = 20;
-        // grassMaterial.furDensity = 50;
-        // grassMaterial.furSpeed = 1000;
-        // grassMaterial.furGravity = new BABYLON.Vector3(0, 0, 0);
-        // // var grassTexture = new BABYLON.Texture("./assets/human_female_diffuse.png", this._scene);
-        // // var grassTexture = new BABYLON.GrassProceduralTexture("grassTex", 4096, this._scene);
-        // grass.material = grassMaterial;
-        // var quality = 20;
-        // var shells = BABYLON.FurMaterial.FurifyMesh(grass, quality); 
+        let grass = BABYLON.MeshBuilder.CreateGround('grass', { width: 100, height: 100, subdivisions: 1 }, this._scene);
+        grass.receiveShadows = true;
+        grass.isBlocker = false;
+        grass.isPickable = false;
+        var grassMaterial = new BABYLON.FurMaterial("grass", this._scene);
+        grassMaterial.highLevelFur = true;
+        grassMaterial.furLength = 5;
+        grassMaterial.furAngle = 0;
+        grassMaterial.furColor = new BABYLON.Color3(1, 1, 1);
+        // grassMaterial.diffuseTexture = new BABYLON.Texture("assets/fur.jpg", this._scene);
+        grassMaterial.diffuseTexture = groundMaterial.diffuseTexture;
+        grassMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        grassMaterial.furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", this._scene);
+        grassMaterial.furSpacing = 50;
+        grassMaterial.furOffset = 20;
+        grassMaterial.furDensity = 5;
+        grassMaterial.furSpeed = 1000;
+        grassMaterial.furGravity = new BABYLON.Vector3(0, 0, 0);
+        // var grassTexture = new BABYLON.Texture("./assets/human_female_diffuse.png", this._scene);
+        // var grassTexture = new BABYLON.GrassProceduralTexture("grassTex", 4096, this._scene);
+        grass.material = grassMaterial;
+        var quality = 20;
+        grass.position.y = -200;
+        var shells = BABYLON.FurMaterial.FurifyMesh(grass, quality);
     }
     update(scene, delta) {
     }
@@ -60,7 +60,7 @@ export class TerrainSystem extends System {
         return this._terrainObjects;
     }
     intersectTerrainRay(ray, results) {
-        return ray.intersectsMeshes(this._terrainObjects, true, results);
+        return ray.intersectsTerrainObjects(this._terrainObjects, results);
     }
 }
 //# sourceMappingURL=TerrainSystem.js.map

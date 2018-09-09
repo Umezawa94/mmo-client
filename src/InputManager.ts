@@ -7,6 +7,7 @@ export class InputManager{
 
         this._actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {                                
             this._keymap[evt.sourceEvent.code] = true;
+            // console.log(this._keymap);            
         }));
 
         this._actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {                                
@@ -23,5 +24,21 @@ export class InputManager{
     isKeyDown(code:string):boolean{
         return this._keymap[code] === true;
     }
+    registerKeyDownAction(code : string, callback : (event : BABYLON.ActionEvent) => any) {
+        this._actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, (evt) => {   
+            if(code == evt.sourceEvent.code){
+                callback(evt)
+            }                       
+        }));
+    }
+    registerKeyUpAction(code : string, callback : (event : BABYLON.ActionEvent) => any) {
+        this._actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, (evt) => {   
+            if(code == evt.sourceEvent.code){
+                callback(evt)
+            }                       
+        }));
+    }
+
+    
 
 }
