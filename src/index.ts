@@ -133,7 +133,7 @@ export default class Game {
             //     console.log("done");
             // });
 
-            for (let i = 0; i < 20; i+=2) {
+            for (let i = 2; i < 20; i+=2) {
                 const element = (mesh as BABYLON.Mesh).clone(mesh.name + i!, mesh.parent!)!;
                 element.position.set(Math.sin(Math.PI / 1.618033988749895 * i) * i *100, 0, Math.cos(Math.PI / 1.618033988749895 * i)* i *100)
                 

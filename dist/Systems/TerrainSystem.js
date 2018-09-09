@@ -1,5 +1,6 @@
 import { System } from "./System.js";
 import { FaceMap } from "../TerrainObjects/TerrainObject.js";
+import { GrassPopulation } from "../TerrainObjects/GrassPopulation.js";
 export class TerrainSystem extends System {
     constructor(scene) {
         super(scene);
@@ -25,30 +26,28 @@ export class TerrainSystem extends System {
         console.log(positions);
         ground.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
         this.addTerrain(ground);
-        let grass = BABYLON.MeshBuilder.CreateGround('grass', { width: 100, height: 100, subdivisions: 1 }, this._scene);
-        grass.receiveShadows = true;
-        grass.isBlocker = false;
-        grass.isPickable = false;
-        var grassMaterial = new BABYLON.FurMaterial("grass", this._scene);
-        grassMaterial.highLevelFur = true;
-        grassMaterial.furLength = 5;
-        grassMaterial.furAngle = 0;
-        grassMaterial.furColor = new BABYLON.Color3(1, 1, 1);
-        // grassMaterial.diffuseTexture = new BABYLON.Texture("assets/fur.jpg", this._scene);
-        grassMaterial.diffuseTexture = groundMaterial.diffuseTexture;
-        grassMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        grassMaterial.furTexture = BABYLON.FurMaterial.GenerateTexture("furTexture", this._scene);
-        grassMaterial.furSpacing = 50;
-        grassMaterial.furOffset = 20;
-        grassMaterial.furDensity = 5;
-        grassMaterial.furSpeed = 1000;
-        grassMaterial.furGravity = new BABYLON.Vector3(0, 0, 0);
-        // var grassTexture = new BABYLON.Texture("./assets/human_female_diffuse.png", this._scene);
-        // var grassTexture = new BABYLON.GrassProceduralTexture("grassTex", 4096, this._scene);
-        grass.material = grassMaterial;
-        var quality = 20;
-        grass.position.y = -200;
-        var shells = BABYLON.FurMaterial.FurifyMesh(grass, quality);
+        new GrassPopulation(ground);
+        // let grass = this.createGrass(20);
+        // // grass.addLODLevel(200, this.createGrass(10))
+        // // grass.addLODLevel(400, this.createGrass(0))
+        // for (let i = 1; i < grass.length; i++) {
+        //     const layer = grass[i];
+        //     if (i % 2 == 0) layer.addLODLevel(1000, <any>null); 
+        //     layer.addLODLevel(2000, <any>null); 
+        // }
+        // for (let i = 0; i < ground.faceMap.faces.length; i++) {
+        //     const face = ground.faceMap.faces[i];
+        //     let parent = grass[0].createInstance("grassInst"+0);
+        //     for (let j = 1; j < grass.length; j++) {
+        //         const layer = grass[j];
+        //         let inst = layer.createInstance("grassInst"+ i +"_"+j );
+        //         inst.parent = parent;
+        //     }
+        //     parent.position = face.pos0;
+        //     parent.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;
+        //     // parent.scaling.set(100,1,100);
+        //     // debugger;
+        // }
     }
     update(scene, delta) {
     }

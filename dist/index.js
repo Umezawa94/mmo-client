@@ -85,7 +85,7 @@ export default class Game {
             // ], true,undefined, (mesh)=>{
             //     console.log("done");
             // });
-            for (let i = 0; i < 20; i += 2) {
+            for (let i = 2; i < 20; i += 2) {
                 const element = mesh.clone(mesh.name + i, mesh.parent);
                 element.position.set(Math.sin(Math.PI / 1.618033988749895 * i) * i * 100, 0, Math.cos(Math.PI / 1.618033988749895 * i) * i * 100);
                 element.ellipsoid.set(100, 200, 100);

@@ -180,6 +180,18 @@ export class Face {
         return this._pos2;
     }
     ;
+    get index0() {
+        return this._index0;
+    }
+    ;
+    get index1() {
+        return this._index1;
+    }
+    ;
+    get index2() {
+        return this._index2;
+    }
+    ;
     get edge0() {
         return this._edge0;
     }
@@ -196,6 +208,12 @@ export class Face {
         return this._faceId;
     }
     ;
+    get terrainObject() {
+        return this._terrainObject;
+    }
+    get faceMap() {
+        return this._faceMap;
+    }
 }
 Face._tolerance = 0.02;
 Face.offsetMatrix = BABYLON.Matrix.FromValues(1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0);

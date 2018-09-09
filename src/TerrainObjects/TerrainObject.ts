@@ -235,6 +235,15 @@ export class Face{
     get pos2() : BABYLON.Vector3{
         return this._pos2;
     };
+    get index0() : number{
+        return this._index0;
+    };
+    get index1() : number{
+        return this._index1;
+    };
+    get index2() : number{
+        return this._index2;
+    };
     get edge0() : BABYLON.Vector3{
         return this._edge0;
     };
@@ -247,5 +256,11 @@ export class Face{
     get faceId() : number{
         return this._faceId;
     };
+    get terrainObject() : TerrainObject{
+        return this._terrainObject;
+    }
+    get faceMap() : FaceMap{
+        return this._faceMap;
+    }
     
 }
